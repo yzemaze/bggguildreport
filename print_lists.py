@@ -84,7 +84,7 @@ if __name__ == "__main__":
             style = "html"
             ext = "html"
 
-        with open("output_" + date_str + "." + ext, "w") as of:
+        with open(f"output_{date_str}.{ext}", "w") as of:
             headlines = [
                 _("Top"), _("Bottom"),
                 _("Most Varied"), _("Most Similar"),

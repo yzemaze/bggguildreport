@@ -234,17 +234,8 @@ def main(b, n, s, guild, concat=False,
         pruned_games.sort(key=lambda x: x[3], reverse=True)
 
         max_name_width = max([len(game[0]) for game in pruned_games])
-        format_string_prefix = "{:2} {:"
-        format_string_suffix = "} {:3} {:5.3f} {:5.3f}"
-        format_string = format_string_prefix + \
-            str(max_name_width) + format_string_suffix
         for idx, game in enumerate(pruned_games):
-            detail_string = format_string.format(idx + 1,
-                                                 game[0],
-                                                 game[2],
-                                                 game[3],
-                                                 game[4])
-            print(detail_string)
+            print(f"{idx + 1:2} {game[0]:{max_name_width}} {game[2]:3} {game[3]:5.3f} {game[4]:5.3f}")
         return
     else:
         top_games = [x for x in all_games if x[1] >= 0.1 * member_count]

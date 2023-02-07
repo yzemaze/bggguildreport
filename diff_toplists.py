@@ -103,7 +103,7 @@ def print_list(old_file, new_file, style):
                         [/tr]",
                           file=of)
                 else:
-                    print(f"{index + 1:3} {diff_string:5} {game_info[0]:{name_width}} {game_info[2]:{ratings_width}} {diff_ratings:6} {game_info[3]:{mean_width}.3f} {diff_mean:8} {game_info[4]:8.3f}", file=of)
+                    print(f"{index + 1:3} {diff_string:5} {game_info[0]:{name_width}} {game_info[2]:{ratings_width}} {diff_ratings:6} {game_info[3]:{mean_width}.3f} {diff_mean:8} {game_info[4]:6.3f}", file=of)
 
             # table footer
             if style == "html":
@@ -146,6 +146,5 @@ if __name__ == "__main__":
         ext = "html"
 
     date_str = datetime.datetime.now().strftime("%Y%m%d")
-    with open("topdiff_" + date_str + "." + ext, "w") as of:
+    with open(f"topdiff_{date_str}.{ext}", "w") as of:
         print_list(args.old, args.new, style)
-        of.close()
