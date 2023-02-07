@@ -17,12 +17,14 @@ def print_list(category, games, headline, count, style):
             print("<th>", th, "</th>", sep="", file=of)
         print("</tr></thead><tbody>", sep="", file=of)
         for idx, game in enumerate(json_data):
-            table_row_data = (idx + 1, game[0], game[2], game[3], game[4])
-            print("<tr><td class=\"text-right\">{:2}</td> \
-                <td>{}</td><td class=\"text-right\">{:2}</td> \
-                <td class=\"text-right\">{:5.3f}</td> \
-                <td class=\"text-right\">{:5.3f}</td></tr>".format(
-                *table_row_data), file=of)
+            print(f"<tr> \
+                <td class=\"text-right\">{idx + 1}</td> \
+                <td>{game[0]}</td> \
+                <td class=\"text-right\">{game[2]}</td> \
+                <td class=\"text-right\">{game[3]:.3f}</td> \
+                <td class=\"text-right\">{game[4]:.3f}</td> \
+                </tr>",
+                  file=of)
         print("</tbody></table>", file=of)
     elif style == "bbcode":
         print("[", hlevel, "]", headline, "[/", hlevel, "]", sep="", file=of)
@@ -31,23 +33,21 @@ def print_list(category, games, headline, count, style):
             print("[th]", th, "[/th]", sep="", file=of)
         print("[/tr]", sep="", file=of)
         for idx, game in enumerate(json_data):
-            table_row_data = (idx + 1, game[0], game[2], game[3], game[4])
-            print("[tr][td]{:2}[/td][td]{}[/td][td]{:2}[/td] \
-                [td]{:5.3f}[/td][td]{:5.3f}[/td][/tr]".format(
-                *table_row_data), file=of)
+            print(f"[tr] \
+                [td]{idx + 1:2}[/td] \
+                [td]{game[0]}[/td] \
+                [td]{game[2]:2}[/td] \
+                [td]{game[3]:5.3f}[/td] \
+                [td]{game[4]:5.3f}[/td] \
+                [/tr]",
+                  file=of)
         print("[/table]", file=of)
     else:
         # bgg-style
-        format_string_prefix = u"{:2} {:"
-        format_string_ext = u"} {:3} {:5.3f} {:5.3f}"
         max_name_width = max([len(game[0]) for game in json_data])
-        format_string = format_string_prefix \
-            + str(max_name_width) + format_string_ext
         print("\n[b]", headline, "[/b]\n[c]", sep="", file=of)
         for idx, game in enumerate(json_data):
-            detail_string = format_string.format(
-                idx + 1, game[0], game[2], game[3], game[4])
-            print(detail_string, file=of)
+            print(f"{idx + 1:2} {game[0]:{max_name_width}} {game[2]:3} {game[3]:5.3f} {game[4]:5.3f}", file=of)
         print("[/c]", file=of)
 
 

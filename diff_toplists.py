@@ -54,17 +54,9 @@ def print_list(old_file, new_file, style):
                 name_width = max([len(x[0]) for x in new_top])
                 ratings_width = max(len(ths[3]), 4)
                 mean_width = max(len(ths[5]), 5)
-                sd_width = max(len(ths[7]), 5)
-                format_string = "{:3} {:5} {:" + str(name_width) + "}" \
-                    " {:" + str(ratings_width) + "} {:6}" + \
-                    "  {:" + str(mean_width) + ".3f} {:8}" + \
-                    "  {:" + str(sd_width) + ".3f}"
-                format_headers = "{:3} {:5} {:" + str(name_width) + "}" \
-                    " {:" + str(ratings_width) + "} {:6}" + \
-                    "  {:" + str(mean_width) + "} {:8}" + \
-                    "  {:" + str(sd_width) + "}"
                 print("[b]Top[/b]\n[c]", file=of)
-                print("" + format_headers.format(*ths), file=of)
+                print(f"{ths[0]:3} {ths[1]:5} {ths[2]:{name_width}} {ths[3]:{ratings_width}} {ths[4]:6} {ths[5]:{mean_width}} {ths[6]:9} {ths[7]:5}",
+                      file=of)
 
             # table content
             for index, game_info in enumerate(new_top):
@@ -79,43 +71,39 @@ def print_list(old_file, new_file, style):
                         old_top_ratings[old_index]
                     diff_mean = game_info[3] - \
                         old_top_means[old_index]
-                    diff_string = "{:>+3}".format(diff)
-                    diff_ratings = "{:>+3}".format(diff_ratings)
-                    diff_mean = "{:+.3f}".format(diff_mean)
+                    diff_string = f"{diff:>+3}"
+                    diff_ratings = f"{diff_ratings:>+3}"
+                    diff_mean = f"{diff_mean:+.3f}"
                 else:
                     diff_string = _("new")
                     diff_mean = ""
                     diff_ratings = ""
-
-                table_row_data = (index + 1, diff_string, game_info[0],
-                                  game_info[2], diff_ratings,
-                                  game_info[3], diff_mean, game_info[4])
-
                 if style == "html":
-                    print("<tr><td class=\"text-right\">{}</td> \
-                        <td class=\"text-right\">{}</td> \
-                        <td>{}</td> \
-                        <td class=\"text-right\">{:4}</td> \
-                        <td class=\"text-right\">{}</td> \
-                        <td class=\"text-right\">{:6.3f}</td> \
-                        <td class=\"text-right\">{}</td> \
-                        <td class=\"text-right\">{:6.3f}</td> \
-                        </tr>".format(
-                        *table_row_data), file=of)
+                    print(f"<tr> \
+                        <td class=\"text-right\">{index + 1}</td> \
+                        <td class=\"text-right\">{diff_string}</td> \
+                        <td>{game_info[0]}</td> \
+                        <td class=\"text-right\">{game_info[2]}</td> \
+                        <td class=\"text-right\">{diff_ratings}</td> \
+                        <td class=\"text-right\">{game_info[3]:.3f}</td> \
+                        <td class=\"text-right\">{diff_mean}</td> \
+                        <td class=\"text-right\">{game_info[4]:.3f}</td> \
+                        </tr>",
+                          file=of)
                 elif style == "bbcode":
-                    print("[tr][td]{}[/td] \
-                        [td]{}[/td] \
-                        [td]{}[/td] \
-                        [td]{:4}[/td] \
-                        [td]{}[/td] \
-                        [td]{:5.3f}[/td] \
-                        [td]{}[/td] \
-                        [td]{:5.3f}[/td] \
-                        [/tr]".format(
-                        *table_row_data), file=of)
+                    print(f"[tr] \
+                        [td]{index + 1}[/td] \
+                        [td]{diff_string}[/td] \
+                        [td]{game_info[0]}[/td] \
+                        [td]{game_info[2]}[/td] \
+                        [td]{diff_ratings}[/td] \
+                        [td]{game_info[3]:.3f}[/td] \
+                        [td]{diff_mean}[/td] \
+                        [td]{game_info[4]:.3f}[/td] \
+                        [/tr]",
+                          file=of)
                 else:
-                    detail_string = format_string.format(*table_row_data)
-                    print(detail_string, file=of)
+                    print(f"{index + 1:3} {diff_string:5} {game_info[0]:{name_width}} {game_info[2]:{ratings_width}} {diff_ratings:6} {game_info[3]:{mean_width}.3f} {diff_mean:8} {game_info[4]:8.3f}", file=of)
 
             # table footer
             if style == "html":
