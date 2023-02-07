@@ -2,6 +2,7 @@ import argparse
 import datetime
 import gettext
 import json
+import logging
 
 
 def print_list(old_file, new_file, style):
@@ -55,7 +56,9 @@ def print_list(old_file, new_file, style):
                 ratings_width = max(len(ths[3]), 4)
                 mean_width = max(len(ths[5]), 5)
                 print("[b]Top[/b]\n[c]", file=of)
-                print(f"{ths[0]:3} {ths[1]:5} {ths[2]:{name_width}} {ths[3]:{ratings_width}} {ths[4]:6} {ths[5]:{mean_width}} {ths[6]:9} {ths[7]:5}",
+                print(f"{ths[0]:3} {ths[1]:5} {ths[2]:{name_width}} "
+                      f"{ths[3]:{ratings_width}} {ths[4]:6} "
+                      f"{ths[5]:{mean_width}} {ths[6]:9} {ths[7]:5}",
                       file=of)
 
             # table content
@@ -103,7 +106,11 @@ def print_list(old_file, new_file, style):
                         [/tr]",
                           file=of)
                 else:
-                    print(f"{index + 1:3} {diff_string:5} {game_info[0]:{name_width}} {game_info[2]:{ratings_width}} {diff_ratings:6} {game_info[3]:{mean_width}.3f} {diff_mean:8} {game_info[4]:6.3f}", file=of)
+                    print(f"{index+1:3} {diff_string:5} "
+                          f"{game_info[0]:{name_width}} "
+                          f"{game_info[2]:{ratings_width}} {diff_ratings:6} "
+                          f"{game_info[3]:{mean_width}.3f} {diff_mean:8} "
+                          f"{game_info[4]:6.3f}", file=of)
 
             # table footer
             if style == "html":
@@ -114,7 +121,10 @@ def print_list(old_file, new_file, style):
                 print("[/c]", file=of)
 
 if __name__ == "__main__":
-    # parse arguments
+    logging.basicConfig(filename="std.log", encoding="utf-8",
+                        format="%(asctime)s %(message)s", level=logging.DEBUG)
+    logger = logging.getLogger()
+
     parser = argparse.ArgumentParser(
         description="Print top x with diffs in a pretty format")
     parser.add_argument(
@@ -146,5 +156,8 @@ if __name__ == "__main__":
         ext = "html"
 
     date_str = datetime.datetime.now().strftime("%Y%m%d")
-    with open(f"topdiff_{date_str}.{ext}", "w") as of:
+    filename = f"topdiff_{date_str}.{ext}"
+    with open(filename, "w") as of:
         print_list(args.old, args.new, style)
+
+    logger.info(f"+/- saved to {filename}")

@@ -8,9 +8,11 @@
 # TODO: Implement pastable report
 # TODO: Remove dependency on boardgamegeek module to make better queries
 
+import argparse
 import csv
 import datetime
 import json
+import logging
 import math
 from queue import Queue
 from statistics import mean, stdev
@@ -38,7 +40,7 @@ def get_guild_user_list(guild_id, bgg=None):
     """Fetch the member list for a BGG Guild"""
     if bgg is None:
         bgg = BGGClient()
-    print("Fetching guild user list")
+    logger.info("fetching guild user list")
     guild = bgg.guild(guild_id)
     return list(guild.members)
 
@@ -66,7 +68,7 @@ def get_game_info(game_id, bgg=None):
         try:
             game = bgg.game(game_id=game_id)
         except Exception:
-            print("Trying to fetch again...")
+            print("Trying to fetch again ...")
             continue
     return game
 
@@ -95,16 +97,16 @@ def get_all_ratings(members, bgg=None):
     if bgg is None:
         bgg = BGGClient()
     all_member_ratings = dict()
-    print("Retrieving user ratings...")
+    print("Retrieving user ratings ...")
     work_queue = Queue()
     retry_queue = Queue()
     fails = list()
     for member in members:
         work_queue.put(member)
     while not work_queue.empty():
-        print(work_queue.qsize(), "members to process")
+        logger.info(f"{work_queue.qsize()} members to process")
         member = work_queue.get()
-        print("Fetching data for ", member)
+        logger.info(f"fetching data for {member}")
         try:
             user_ratings = get_user_ratings(member, bgg=bgg)
         except Exception:
@@ -112,17 +114,17 @@ def get_all_ratings(members, bgg=None):
             continue
         all_member_ratings[member] = user_ratings
     while not retry_queue.empty():
-        print(retry_queue.qsize(), "members to process")
+        logger.info(f"{retry_queue.qsize()} members to process")
         member = retry_queue.get()
-        print("Fetching data for ", member)
+        logger.info(f"fetching data for {member}")
         try:
             user_ratings = get_user_ratings(member, bgg=bgg)
         except Exception:
-            print("No data available for ", member)
+            logger.info(f"no data available for {member}")
             fails.append(member)
             continue
         all_member_ratings[member] = user_ratings
-    print("Ratings retrieved for all users except", fails)
+    logger.info(f"ratings retrieved for all users except for {len(fails)}: {fails}")
     return all_member_ratings
 
 
@@ -144,7 +146,7 @@ def main(b, n, s, guild, concat=False,
             guild_id = UNKNOWNS
         else:
             guild_id = guild
-        print("Guild:", guild, "=> id:", guild_id)
+        logger.info(f"guild: {guild} => id: {guild_id}")
     bgg = BGGClient()
     # if not users and not raw_data: get users, get user ratings, process ratings
     # if users and not raw_data: load users, get user ratings, process ratings
@@ -174,12 +176,12 @@ def main(b, n, s, guild, concat=False,
                 of.write(member + "\n")
 
         guild_size = len(members)
-        print("Members list loaded: %d members" % guild_size)
+        logger.info(f"members list loaded: {guild_size} members")
         member_ratings = get_all_ratings(members, bgg=bgg)
         guild_ratings = collapse_ratings(member_ratings)
 
-        print("Processing results...")
-        print("%d games rated" % len(guild_ratings))
+        logger.info("processing results ...")
+        print(f"{len(guild_ratings)} games rated")
         all_games = list()
         for game_id, ratings in guild_ratings.items():
             num_ratings = len(ratings)
@@ -202,9 +204,9 @@ def main(b, n, s, guild, concat=False,
                                 }
         rating_data[MEMBERS] = members
         rating_data[SORTED_GAMES] = all_games
-        with open("guild_data_" + date_str + ".json", "w") as raw_data_file:
+        with open(f"guild_data_{date_str}.json", "w") as raw_data_file:
             json.dump(rating_data, raw_data_file)
-        with open("member_data_" + date_str + ".yml", "w") as raw_data_file:
+        with open(f"member_data_{date_str}.yml", "w") as raw_data_file:
             yaml.dump(member_ratings, raw_data_file)
     elif raw_data is not None:
         rating_data = json.load(open(raw_data, "r"))
@@ -228,14 +230,15 @@ def main(b, n, s, guild, concat=False,
                 elif len(matches) == 0:
                     matched_game = (row[1], gameid, 0, 0, 0)
                 else:
-                    print("ERROR")
+                    logger.error("could not read pruned_games")
                     return
                 pruned_games.append(matched_game)
         pruned_games.sort(key=lambda x: x[3], reverse=True)
 
         max_name_width = max([len(game[0]) for game in pruned_games])
         for idx, game in enumerate(pruned_games):
-            print(f"{idx + 1:2} {game[0]:{max_name_width}} {game[2]:3} {game[3]:5.3f} {game[4]:5.3f}")
+            print(f"{idx + 1:2} {game[0]:{max_name_width}} {game[2]:3} "
+                  f"{game[3]:5.3f} {game[4]:5.3f}")
         return
     else:
         top_games = [x for x in all_games if x[1] >= 0.1 * member_count]
@@ -251,11 +254,11 @@ def main(b, n, s, guild, concat=False,
         with open(filename, "r") as fi:
             game_infos = json.load(fi)
     except IOError:
-        print("Could not open ", filename, ", creating new dict()", sep="")
+        logger.error(f"could not open {filename}, creating new dict()")
         game_infos = dict()
 
     # Get the top x
-    print("TOP")
+    logger.info("get top games")
     top = list()
     top_games.sort(key=lambda x: x[2], reverse=True)
     count_of_printed = 0
@@ -264,7 +267,7 @@ def main(b, n, s, guild, concat=False,
         # game_name available from file else load from BGG
         try:
             game_name = game_infos[gameid]["name"]
-            print("Read info for game", gameid, "from", filename)
+            logger.info(f"read info for game {gameid} from {filename}")
             if not game_infos[gameid]["expansion"]:
                 count_of_printed += 1
                 top.append(
@@ -280,7 +283,7 @@ def main(b, n, s, guild, concat=False,
         if count_of_printed > n - 1:
             break
     # Get the bottom x
-    print("BOTTOM")
+    logger.info("get bottom games")
     bottom = list()
     top_games.sort(key=lambda x: x[2])
     count_of_printed = 0
@@ -289,7 +292,7 @@ def main(b, n, s, guild, concat=False,
         try:
             game_name = game_infos[gameid]["name"]
             if not game_infos[gameid]["expansion"]:
-                print("Read info for game", gameid, "from", filename)
+                logger.info(f"read info for game {gameid} from {filename}")
                 count_of_printed += 1
                 bottom.append(
                     (game_name, game[0], game[1], game[2], game[3]))
@@ -304,7 +307,7 @@ def main(b, n, s, guild, concat=False,
         if count_of_printed > b - 1:
             break
     # Get the most variable
-    print("VARIANCE")
+    logger.info("get most varied games")
     variance = list()
     top_games.sort(key=lambda x: x[3], reverse=True)
     count_of_printed = 0
@@ -313,7 +316,7 @@ def main(b, n, s, guild, concat=False,
         try:
             game_name = game_infos[gameid]["name"]
             if not game_infos[gameid]["expansion"]:
-                print("Read info for game", gameid, "from", filename)
+                logger.info(f"read info for game {gameid} from {filename}")
                 count_of_printed += 1
                 variance.append(
                     (game_name, game[0], game[1], game[2], game[3]))
@@ -328,7 +331,7 @@ def main(b, n, s, guild, concat=False,
         if count_of_printed > b - 1:
             break
     # Get the least variable
-    print("SIMILAR")
+    logger.info("get most similar games")
     similar = list()
     top_games.sort(key=lambda x: x[3], reverse=False)
     count_of_printed = 0
@@ -337,7 +340,7 @@ def main(b, n, s, guild, concat=False,
         try:
             game_name = game_infos[gameid]["name"]
             if not game_infos[gameid]["expansion"]:
-                print("Read info for game", gameid, "from", filename)
+                logger.info(f"read info for game {gameid} from {filename}")
                 count_of_printed += 1
                 similar.append(
                     (game_name, game[0], game[1], game[2], game[3]))
@@ -352,7 +355,7 @@ def main(b, n, s, guild, concat=False,
         if count_of_printed > b - 1:
             break
     # Get the most rated
-    print("MOST RATED")
+    logger.info("get most rated games")
     most_rated = list()
     top_games.sort(key=lambda x: x[1], reverse=True)
     count_of_printed = 0
@@ -361,7 +364,7 @@ def main(b, n, s, guild, concat=False,
         try:
             game_name = game_infos[gameid]["name"]
             if not game_infos[gameid]["expansion"]:
-                print("Read info for game", gameid, "from", filename)
+                logger.info(f"read info for game {gameid} from {filename}")
                 count_of_printed += 1
                 most_rated.append(
                     (game_name, game[0], game[1], game[2], game[3]))
@@ -376,7 +379,7 @@ def main(b, n, s, guild, concat=False,
         if count_of_printed > b - 1:
             break
     # Get sleepers
-    print("SLEEPERS")
+    logger.info("get sleepers")
     sleepers = list()
     sleeper_games.sort(key=lambda x: x[2], reverse=True)
     count_of_printed = 0
@@ -385,7 +388,7 @@ def main(b, n, s, guild, concat=False,
         try:
             game_name = game_infos[gameid]["name"]
             if not game_infos[gameid]["expansion"]:
-                print("Read info for game", gameid, "from", filename)
+                logger.info(f"read info for game {gameid} from {filename}")
                 count_of_printed += 1
                 sleepers.append(
                     (game_name, game[0], game[1], game[2], game[3]))
@@ -419,12 +422,14 @@ def main(b, n, s, guild, concat=False,
         "category": "most_rated", "count": b, "games": most_rated})
     lists_dict["lists"].append(
         {"category": "sleepers", "count": s, "games": sleepers})
-    with open("lists_" + date_str + ".json", "w") as fi:
+    with open(f"lists_{date_str}.json", "w") as fi:
         json.dump(lists_dict, fi)
-    print("Finished")
+    logger.info(f"games lists saved to lists_{date_str}.json")
 
 if __name__ == "__main__":
-    import argparse
+    logging.basicConfig(filename="std.log", encoding="utf-8",
+                        format="%(asctime)s %(message)s", level=logging.DEBUG)
+    logger = logging.getLogger()
 
     parser = argparse.ArgumentParser()
     parser.add_argument(

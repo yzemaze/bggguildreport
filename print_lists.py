@@ -2,6 +2,7 @@ import argparse
 import datetime
 import gettext
 import json
+import logging
 
 
 def print_list(category, games, headline, count, style):
@@ -47,12 +48,16 @@ def print_list(category, games, headline, count, style):
         max_name_width = max([len(game[0]) for game in json_data])
         print("\n[b]", headline, "[/b]\n[c]", sep="", file=of)
         for idx, game in enumerate(json_data):
-            print(f"{idx + 1:2} {game[0]:{max_name_width}} {game[2]:3} {game[3]:5.3f} {game[4]:5.3f}", file=of)
+            print(f"{idx + 1:2} {game[0]:{max_name_width}} {game[2]:3} "
+                  f"{game[3]:5.3f} {game[4]:5.3f}", file=of)
         print("[/c]", file=of)
 
 
 if __name__ == "__main__":
-    # parse arguments
+    logging.basicConfig(filename="std.log", encoding="utf-8",
+                        format="%(asctime)s %(message)s", level=logging.DEBUG)
+    logger = logging.getLogger()
+
     parser = argparse.ArgumentParser(
         description="Process file to print in a pretty format")
     parser.add_argument(
@@ -75,8 +80,8 @@ if __name__ == "__main__":
 
     with open(args.filename) as f:
         data = json.load(f)
-        f.close()
-        date_str = datetime.datetime.now().strftime("%Y%m%d")
+        logger.info(f"loaded {args.filename}")
+
         if (args.style == "bgg") or (args.style == "bbcode"):
             style = args.style
             ext = "txt"
@@ -84,7 +89,9 @@ if __name__ == "__main__":
             style = "html"
             ext = "html"
 
-        with open(f"output_{date_str}.{ext}", "w") as of:
+        date_str = datetime.datetime.now().strftime("%Y%m%d")
+        filename = f"output_{date_str}.{ext}"
+        with open(filename, "w") as of:
             headlines = [
                 _("Top"), _("Bottom"),
                 _("Most Varied"), _("Most Similar"),
@@ -97,5 +104,7 @@ if __name__ == "__main__":
             for d in data["lists"]:
                 print_list(d["category"], d["games"],
                            headlines[i], d["count"], style)
+                logger.info(f"formatted printing of {headlines[i]} done")
                 i += 1
-            of.close()
+
+    logger.info(f"formatted lists saved to {filename}")
