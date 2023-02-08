@@ -100,7 +100,7 @@ def get_all_ratings(members, bgg=None):
     logger.info("retrieving user ratings ...")
     work_queue = Queue()
     retry_queue = Queue()
-    fails = list()
+    failed = list()
     for member in members:
         work_queue.put(member)
     while not work_queue.empty():
@@ -113,7 +113,7 @@ def get_all_ratings(members, bgg=None):
         except Exception as e:
             if str(e) == "Invalid username specified":
                 logger.info(f"invalid username: {member}")
-                fails.append(member)
+                failed.append(member)
             else:
                 print(e)
                 logger.info(f"request queued for {member}")
@@ -128,12 +128,12 @@ def get_all_ratings(members, bgg=None):
             user_ratings = get_user_ratings(member, bgg=bgg)
         except Exception:
             logger.info(f"no data available for {member}")
-            fails.append(member)
+            failed.append(member)
             continue
         all_member_ratings[member] = user_ratings
-    logger.info(f"could not retrieve ratings for {len(fails)} users\n"
-                f"{fails}")
-    return all_member_ratings, fails
+    logger.info(f"could not retrieve ratings for {len(failed)} users\n"
+                f"{failed}")
+    return all_member_ratings, failed
 
 
 def collapse_ratings(member_ratings):
