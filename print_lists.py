@@ -6,7 +6,7 @@ import logging
 
 
 def print_list(category, games, headline, count, style):
-    """Print list per category in given style to file."""
+    """print list per category in given style to file."""
     hlevel = "h3"
     ths = [_("No."), _("Game"), _("Ratings"), _("Mean"), _("Stdev")]
 
