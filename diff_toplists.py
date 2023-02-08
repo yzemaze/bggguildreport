@@ -34,23 +34,20 @@ def print_list(old_file, new_file, style):
 
             # table header
             if style == "html":
-                print("<style>\n\
-                    .text-right {text-align: right; padding: 0 5px;}\n\
-                    </style>", file=of)
-                print("<", hlevel, ">", headline, "</", hlevel, ">",
-                      sep="", file=of)
-                print("<table id=", headline, "><thead><tr>",
-                      sep="", file=of)
+                print(f"<style>\n"
+                      f".text-right {{text-align: right; padding: 0 5px;}}\n"
+                      f"</style>", file=of)
+                print(f"<{hlevel}>{headline}</{hlevel}>", file=of)
+                print(f"<table id={headline.replace(' ', '_')}>\n<thead>\n<tr>", file=of)
                 for i, th in enumerate(ths):
-                    print("<th>", th, "</th>", sep="", file=of)
-                print("</tr></thead><tbody>", sep="", file=of)
+                    print(f"<th>{th}</th>", file=of)
+                print(f"</tr>\n</thead>\n<tbody>", file=of)
             elif style == "bbcode":
-                print("[", hlevel, "]", headline,
-                      "[/", hlevel, "]", sep="", file=of)
-                print("[table][tr]", sep="", file=of)
+                print(f"[{hlevel}]{headline}[/{hlevel}]", file=of)
+                print("[table]\n[tr]", file=of)
                 for i, th in enumerate(ths):
-                    print("[th]", th, "[/th]", sep="", file=of)
-                print("[/tr]", sep="", file=of)
+                    print(f"[th]{th}[/th]", file=of)
+                print("[/tr]", file=of)
             else:
                 name_width = max([len(x[0]) for x in new_top])
                 ratings_width = max(len(ths[3]), 4)
@@ -77,28 +74,28 @@ def print_list(old_file, new_file, style):
                     diff_ratings = ""
                     diff_mean = ""
                 if style == "html":
-                    print(f"<tr> \
-                        <td class=\"text-right\">{index + 1}</td> \
-                        <td class=\"text-right\">{diff_index}</td> \
-                        <td>{game_info[0]}</td> \
-                        <td class=\"text-right\">{game_info[2]}</td> \
-                        <td class=\"text-right\">{diff_ratings}</td> \
-                        <td class=\"text-right\">{game_info[3]:.3f}</td> \
-                        <td class=\"text-right\">{diff_mean}</td> \
-                        <td class=\"text-right\">{game_info[4]:.3f}</td> \
-                        </tr>",
+                    print(f"<tr>\n"
+                          f"<td class=\"text-right\">{index + 1}</td>\n"
+                          f"<td class=\"text-right\">{diff_index}</td>\n"
+                          f"<td>{game_info[0]}</td>\n"
+                          f"<td class=\"text-right\">{game_info[2]}</td>\n"
+                          f"<td class=\"text-right\">{diff_ratings}</td>\n"
+                          f"<td class=\"text-right\">{game_info[3]:.3f}</td>\n"
+                          f"<td class=\"text-right\">{diff_mean}</td>\n"
+                          f"<td class=\"text-right\">{game_info[4]:.3f}</td>\n"
+                          f"</tr>",
                           file=of)
                 elif style == "bbcode":
-                    print(f"[tr] \
-                        [td]{index + 1}[/td] \
-                        [td]{diff_index}[/td] \
-                        [td]{game_info[0]}[/td] \
-                        [td]{game_info[2]}[/td] \
-                        [td]{diff_ratings}[/td] \
-                        [td]{game_info[3]:.3f}[/td] \
-                        [td]{diff_mean}[/td] \
-                        [td]{game_info[4]:.3f}[/td] \
-                        [/tr]",
+                    print(f"[tr]\n"
+                          f"[td]{index + 1}[/td]\n"
+                          f"[td]{diff_index}[/td]\n"
+                          f"[td]{game_info[0]}[/td]\n"
+                          f"[td]{game_info[2]}[/td]\n"
+                          f"[td]{diff_ratings}[/td]\n"
+                          f"[td]{game_info[3]:.3f}[/td]\n"
+                          f"[td]{diff_mean}[/td]\n"
+                          f"[td]{game_info[4]:.3f}[/td]\n"
+                          f"[/tr]",
                           file=of)
                 else:
                     print(f"{index+1:3} {diff_index:5} "
@@ -109,7 +106,7 @@ def print_list(old_file, new_file, style):
 
             # table footer
             if style == "html":
-                print("</tbody></table>", file=of)
+                print("</tbody>\n</table>", file=of)
             elif style == "bbcode":
                 print("[/table]", file=of)
             else:

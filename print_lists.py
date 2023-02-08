@@ -12,41 +12,41 @@ def print_list(category, games, headline, count, style):
 
     json_data = games
     if style == "html":
-        print("<", hlevel, ">", headline, "</", hlevel, ">", sep="", file=of)
-        print("<table id=", category, "><thead><tr>", sep="", file=of)
+        print(f"<{hlevel}>{headline}</{hlevel}>", file=of)
+        print(f"<table id={category.replace(' ', '_')}>\n<thead>\n<tr>", file=of)
         for i, th in enumerate(ths):
-            print("<th>", th, "</th>", sep="", file=of)
-        print("</tr></thead><tbody>", sep="", file=of)
+            print(f"<th>{th}</th>", file=of)
+        print("</tr>\n</thead>\n<tbody>", file=of)
         for idx, game in enumerate(json_data):
-            print(f"<tr> \
-                <td class=\"text-right\">{idx + 1}</td> \
-                <td>{game[0]}</td> \
-                <td class=\"text-right\">{game[2]}</td> \
-                <td class=\"text-right\">{game[3]:.3f}</td> \
-                <td class=\"text-right\">{game[4]:.3f}</td> \
-                </tr>",
+            print(f"<tr>\n"
+                  f"<td class=\"text-right\">{idx + 1}</td>\n"
+                  f"<td>{game[0]}</td>\n"
+                  f"<td class=\"text-right\">{game[2]}</td>\n"
+                  f"<td class=\"text-right\">{game[3]:.3f}</td>\n"
+                  f"<td class=\"text-right\">{game[4]:.3f}</td>\n"
+                  f"</tr>",
                   file=of)
-        print("</tbody></table>", file=of)
+        print("</tbody>\n</table>", file=of)
     elif style == "bbcode":
-        print("[", hlevel, "]", headline, "[/", hlevel, "]", sep="", file=of)
-        print("[table][tr]", sep="", file=of)
+        print(f"[{hlevel}]{headline}[/{hlevel}]", file=of)
+        print("[table]\n[tr]", file=of)
         for i, th in enumerate(ths):
-            print("[th]", th, "[/th]", sep="", file=of)
-        print("[/tr]", sep="", file=of)
+            print(f"[th]{th}[/th]", file=of)
+        print("[/tr]", file=of)
         for idx, game in enumerate(json_data):
-            print(f"[tr] \
-                [td]{idx + 1:2}[/td] \
-                [td]{game[0]}[/td] \
-                [td]{game[2]:2}[/td] \
-                [td]{game[3]:5.3f}[/td] \
-                [td]{game[4]:5.3f}[/td] \
-                [/tr]",
+            print(f"[tr]\n"
+                  f"[td]{idx+1:2}[/td]\n"
+                  f"[td]{game[0]}[/td]\n"
+                  f"[td]{game[2]:2}[/td]\n"
+                  f"[td]{game[3]:5.3f}[/td]\n"
+                  f"[td]{game[4]:5.3f}[/td]\n"
+                  f"[/tr]",
                   file=of)
         print("[/table]", file=of)
     else:
         # bgg-style
         max_name_width = max([len(game[0]) for game in json_data])
-        print("\n[b]", headline, "[/b]\n[c]", sep="", file=of)
+        print(f"\n[b]{headline}[/b]\n[c]", file=of)
         for idx, game in enumerate(json_data):
             print(f"{idx + 1:2} {game[0]:{max_name_width}} {game[2]:3} "
                   f"{game[3]:5.3f} {game[4]:5.3f}", file=of)
@@ -97,9 +97,9 @@ if __name__ == "__main__":
                 _("Most Varied"), _("Most Similar"),
                 _("Most Rated"), _("Sleepers")]
             if style == "html":
-                print("<style>\n.text-right {\
-                        text-align: right; padding: 0 5px;}\n\
-                    </style>", file=of)
+                print(f"<style>\n"
+                      f".text-right {{text-align: right; padding: 0 5px;}}\n"
+                      f"</style>", file=of)
             i = 0
             for d in data["lists"]:
                 print_list(d["category"], d["games"],
