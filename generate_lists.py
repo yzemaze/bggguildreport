@@ -4,9 +4,7 @@
 # BGG Guild.
 #
 # TODO: pydoc strings
-# TODO: refactor user retries
 # TODO: implement pastable report
-# TODO: remove dependency on boardgamegeek module to make better queries
 
 import argparse
 import csv
@@ -51,7 +49,7 @@ def get_user_ratings(username, bgg=None):
     if bgg is None:
         bgg = BGGClient()
     user_ratings = dict()
-    collection = bgg.collection(username)
+    collection = bgg.collection(username, rated=True)
     print(collection)
     for item in collection:
         if item.rating:
@@ -160,9 +158,9 @@ def main(b, n, s, guild, concat=False,
             guild_id = guild
         logger.info(f"guild: {guild} => id: {guild_id}")
     bgg = BGGClient()
-    # if not users and not raw_data: get users, get user ratings, process ratings
+    # if not users and not raw_data: get users + user ratings, process ratings
     # if users and not raw_data: load users, get user ratings, process ratings
-    # if raw data: load users, load user ratings, process ratings
+    # if raw data: load users + user ratings, process ratings
     date_str = datetime.datetime.now().strftime("%Y%m%d")
     if raw_data is None:
         if concat is False:
