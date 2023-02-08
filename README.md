@@ -10,5 +10,8 @@ Changes in comparison to <a href="https://github.com/vizcacha/bggguildreport">vi
 - select output format (html/bbcode/txt)
 - i18n
 - combine lists of users and guild’s user list
+- ignore invalid usernames
+- limit data retrieval to rated games
+- retry queued requests
 - lists added (sleepers, most varied/similar)
 - save/load gameinfos to prevent unnecessary calls to BGG
