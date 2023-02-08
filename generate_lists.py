@@ -24,6 +24,7 @@ from boardgamegeek import BGGClient
 HEAVY_CARDBOARD = 2044
 PUNCHING_CARDBOARD = 1805
 UNKNOWNS = 3422
+TEST = 2387
 
 # dictionary keys
 SORTED_GAMES = "sorted_games"
@@ -110,8 +111,15 @@ def get_all_ratings(members, bgg=None):
         logger.info(f"retrieving data for {member}")
         try:
             user_ratings = get_user_ratings(member, bgg=bgg)
-        except Exception:
-            retry_queue.put(member)
+            logger.info(f"data retrieved for {member}")
+        except Exception as e:
+            if str(e) == "Invalid username specified":
+                logger.info(f"invalid username: {member}")
+                fails.append(member)
+            else:
+                print(e)
+                logger.info(f"request queued for {member}")
+                retry_queue.put(member)
             continue
         all_member_ratings[member] = user_ratings
     while not retry_queue.empty():
@@ -125,8 +133,9 @@ def get_all_ratings(members, bgg=None):
             fails.append(member)
             continue
         all_member_ratings[member] = user_ratings
-    logger.info(f"ratings retrieved for all users except for {len(fails)}: {fails}")
-    return all_member_ratings
+    logger.info(f"could not retrieve ratings for {len(fails)} users\n"
+                f"{fails}")
+    return all_member_ratings, fails
 
 
 def collapse_ratings(member_ratings):
@@ -145,6 +154,8 @@ def main(b, n, s, guild, concat=False,
             guild_id = PUNCHING_CARDBOARD
         elif guild == "uk":
             guild_id = UNKNOWNS
+        elif guild == "test":
+            guild_id = TEST
         else:
             guild_id = guild
         logger.info(f"guild: {guild} => id: {guild_id}")
@@ -176,9 +187,9 @@ def main(b, n, s, guild, concat=False,
             for member in members:
                 of.write(member + "\n")
 
-        guild_size = len(members)
+        member_ratings, invalid_users = get_all_ratings(members, bgg=bgg)
+        guild_size = len(members) - len(invalid_users)
         logger.info(f"members list loaded: {guild_size} members")
-        member_ratings = get_all_ratings(members, bgg=bgg)
         guild_ratings = collapse_ratings(member_ratings)
 
         logger.info("processing results ...")
@@ -442,7 +453,7 @@ if __name__ == "__main__":
         help="concatenate lists of users and guild members")
     parser.add_argument(
         "-g", "--guild",
-        help="guild-id or one of [pc, hc, uk]")
+        help="guild-id or one of [hc, pc, uk, test]")
     parser.add_argument(
         "-n", type=int, default=50,
         help="output the top N games, default=50")
