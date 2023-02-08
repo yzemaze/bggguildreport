@@ -69,22 +69,17 @@ def print_list(old_file, new_file, style):
                     old_index = -1
 
                 if old_index > -1:
-                    diff = old_index - index
-                    diff_ratings = game_info[2] - \
-                        old_top_ratings[old_index]
-                    diff_mean = game_info[3] - \
-                        old_top_means[old_index]
-                    diff_string = f"{diff:>+3}"
-                    diff_ratings = f"{diff_ratings:>+3}"
-                    diff_mean = f"{diff_mean:+.3f}"
+                    diff_index = f"{old_index - index:>+3}"
+                    diff_ratings = f"{game_info[2] - old_top_ratings[old_index]:>+3}"
+                    diff_mean = f"{game_info[3] - old_top_means[old_index]:+.3f}"
                 else:
-                    diff_string = _("new")
-                    diff_mean = ""
+                    diff_index = _("new")
                     diff_ratings = ""
+                    diff_mean = ""
                 if style == "html":
                     print(f"<tr> \
                         <td class=\"text-right\">{index + 1}</td> \
-                        <td class=\"text-right\">{diff_string}</td> \
+                        <td class=\"text-right\">{diff_index}</td> \
                         <td>{game_info[0]}</td> \
                         <td class=\"text-right\">{game_info[2]}</td> \
                         <td class=\"text-right\">{diff_ratings}</td> \
@@ -96,7 +91,7 @@ def print_list(old_file, new_file, style):
                 elif style == "bbcode":
                     print(f"[tr] \
                         [td]{index + 1}[/td] \
-                        [td]{diff_string}[/td] \
+                        [td]{diff_index}[/td] \
                         [td]{game_info[0]}[/td] \
                         [td]{game_info[2]}[/td] \
                         [td]{diff_ratings}[/td] \
@@ -106,7 +101,7 @@ def print_list(old_file, new_file, style):
                         [/tr]",
                           file=of)
                 else:
-                    print(f"{index+1:3} {diff_string:5} "
+                    print(f"{index+1:3} {diff_index:5} "
                           f"{game_info[0]:{name_width}} "
                           f"{game_info[2]:{ratings_width}} {diff_ratings:6} "
                           f"{game_info[3]:{mean_width}.3f} {diff_mean:8} "
