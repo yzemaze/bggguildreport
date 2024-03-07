@@ -115,7 +115,7 @@ def get_all_ratings(members, bgg=None):
                 logger.info(f"invalid username: {member}")
                 failed.append(member)
             else:
-                print(e)
+                logger.info(e)
                 logger.info(f"request queued for {member}")
                 retry_queue.put(member)
             continue
@@ -167,9 +167,9 @@ def main(b, n, s, guild, concat=False,
             # load members from file or query for current list
             if users is None:
                 members = get_guild_user_list(guild_id, bgg=bgg)
-                of = open("members_" + date_str + ".txt", "w")
-                for member in members:
-                    of.write(member + "\n")
+                with open(f"members_{date_str}.txt", "w") as of:
+                    for member in members:
+                        print(member, file=of)
             else:
                 members = load_members_from_file(users)
                 members = [member.lower() for member in members]
@@ -181,9 +181,9 @@ def main(b, n, s, guild, concat=False,
             members = members_file + members_guild
             members = [member.lower() for member in members]
             members = sorted(set(members))
-            of = open("members_" + date_str + ".txt", "w")
-            for member in members:
-                of.write(member + "\n")
+            with open(f"members_{date_str}.txt", "w") as of:
+                for member in members:
+                    print(member, file=of)
 
         member_ratings, invalid_users = get_all_ratings(members, bgg=bgg)
         guild_size = len(members) - len(invalid_users)
@@ -202,10 +202,9 @@ def main(b, n, s, guild, concat=False,
                 sd_ratings = 0
             all_games.append((game_id, num_ratings, avg_rating, sd_ratings))
 
-        # sort the list
         all_games.sort(key=lambda x: x[2], reverse=True)
 
-        # write out the raw data to this point
+        # dump raw data into files
         current_time_str = str(datetime.datetime.now())
         rating_data = dict()
         rating_data[SUMMARY] = {GUILD_MEMBER_COUNT: guild_size,
@@ -216,8 +215,10 @@ def main(b, n, s, guild, concat=False,
         rating_data[SORTED_GAMES] = all_games
         with open(f"guild_data_{date_str}.json", "w") as raw_data_file:
             json.dump(rating_data, raw_data_file)
+            logger.info(f"guild data saved to guild_data_{date_str}.json")
         with open(f"member_data_{date_str}.yml", "w") as raw_data_file:
             yaml.dump(member_ratings, raw_data_file)
+            logger.info(f"member ratings saved to member_data_{date_str}.yml")
     elif raw_data is not None:
         rating_data = json.load(open(raw_data, "r"))
 
